@@ -31,7 +31,7 @@ class ClientProtocol(LineReceiver):
 
                 if case('CONN'):
                     self.status = 'PORT'
-                    if self.serverType == 'SRC' and self.nos == 1:
+                    if self.serverType == 'S' and self.nos == 1:
                         self._nos()
                     self.lineReceived(OK)
                     break
@@ -56,7 +56,7 @@ class ClientProtocol(LineReceiver):
                     pass
         elif line == 'DONE':
             # The client can now ask for statistics
-            if self.serverType == 'SRC' and self.nos == 1:
+            if self.serverType == 'S' and self.nos == 1:
                 self.sendLine('STAT')
             else:
                 self._stop()
@@ -84,7 +84,7 @@ class ClientProtocol(LineReceiver):
         IP = ' '.join(self.destIP.split('.'))
         port = ' '.join([str(self.destPort / 256), str(self.destPort % 256)])
         line = 'PORT %s %s' % (IP, port)
-        self.status = ['STOR', 'RETR'][self.serverType == 'SRC']
+        self.status = ['STOR', 'RETR'][self.serverType == 'S']
         self.sendLine(line)
 
 

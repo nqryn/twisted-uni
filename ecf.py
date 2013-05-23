@@ -6,7 +6,7 @@ from cp import *
 class ExtendedClientFactory(ClientFactory):
     
     def __init__(self, parent, destIP, sourceFile, destFile, nos, streams, serverType):
-    	self.parent     = parent
+        self.parent     = parent
         self.destIP     = destIP
         self.sourceFile = sourceFile
         self.destFile   = destFile
@@ -16,3 +16,15 @@ class ExtendedClientFactory(ClientFactory):
 
     def buildProtocol(self, addr):
         return ClientProtocol(self.parent, self.destIP, self.sourceFile, self.destFile, self.nos, self.streams, self.serverType)
+
+    def startedConnecting(self, connector):
+        print 'startedConnecting'
+        print self.serverType
+
+    def clientConnectionFailed(self, connector, reason):
+        print 'clientConnectionFailed'
+        print self.serverType
+
+    def clientConnectionLost(self, connector, reason):
+        print 'clientConnectionLost'
+        print self.serverType
