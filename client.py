@@ -10,37 +10,32 @@ from ecf import *
 class Callback(object):
 
     def __init__(self):
-        self.portDst = None
-        self.portSrc = None
+        self.ports = []
 
     def _stop(self):
-        if self.portSrc != None:
-            self.portSrc.disconnect()
-        if self.portDst != None:
-            self.portDst.disconnect()
+        for port in self.ports:
+            if port is not None:
+                port.disconnect()
         reactor.stop()
 
-def destinationConnected():
-    log_message('Connected to destination server.')
 
-def dstError(self):
-    log_message('Connection to destination server failed.')
 
-def sourceConnected():
-    log_message('Connected to source server.')
-
-def srcError():
-    log_message('Connection to source server failed.')
-
-def checkConnection(args, cb, sType):
+def checkConnection(args, cb, sType, client):
+    
+    if client is not None:
+        dest_address = client[0]
+        dest_port = client[1]
+    else:
+        dest_address = args.dest_address
+        dest_port = args.dest_port
+    port = None
+    factory = ExtendedClientFactory(cb, dest_address, args.source_filepath, args.dest_filepath, args.no_statistics, args.parallel_streams, sType)
     if sType == 'D':
-        factory = ExtendedClientFactory(cb, args.dest_address, args.source_filepath, args.dest_filepath, args.no_statistics, args.parallel_streams, sType)
-        portDst = reactor.connectTCP(args.dest_address, args.dest_port, factory)
-        cb.portDst = portDst
+        port = reactor.connectTCP(dest_address, dest_port, factory)
     elif sType == 'S':
-        factory = ExtendedClientFactory(cb, args.dest_address, args.source_filepath, args.dest_filepath, args.no_statistics, args.parallel_streams, sType)
-        portSrc = reactor.connectTCP(args.source_address, args.source_port, factory)
-        cb.portSrc = portSrc
+        port = reactor.connectTCP(args.source_address, args.source_port, factory)
+    cb.ports.append(port)
+
     
 
 if __name__ == '__main__':
@@ -52,7 +47,18 @@ if __name__ == '__main__':
     log_message('Client started.')
 
     cb = Callback()
-    checkConnection(args, cb, 'D')
-    checkConnection(args, cb, 'S')
+    if args.multicast is not None:
+        with open(args.multicast) as mcFile:
+            for line in mcFile:
+                client = line.split(':')
+                if len(client) == 1:
+                    client.append(args.dest_port)
+                else:
+                    client[1] = int(client[1])
+                checkConnection(args, cb, 'D', client)
+        checkConnection(args, cb, 'S', None)
+    else:
+        checkConnection(args, cb, 'D', None)
+        checkConnection(args, cb, 'S', None)
 
     reactor.run()
