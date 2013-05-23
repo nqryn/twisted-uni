@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 else:
                     client[1] = int(client[1])
                 checkConnection(args, cb, 'D', client)
-        checkConnection(args, cb, 'S', None)
+                checkConnection(args, cb, 'S', client)
     else:
         checkConnection(args, cb, 'D', None)
         checkConnection(args, cb, 'S', None)
